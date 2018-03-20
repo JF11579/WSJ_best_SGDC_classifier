@@ -1,0 +1,1038 @@
+
+Logout 
+WSJ_Best_Version_SGDC_classifier Last Checkpoint: 02/12/2018 (autosaved) 
+ 
+
+Python 2  
+
+Trusted
+File
+Edit
+View
+Insert
+Cell
+Kernel
+Widgets
+Help
+
+
+
+
+
+
+
+
+
+
+
+
+
+In [1]:
+
+
+1
+'''
+2
+So who writes the Wall Street Journal Editorials?
+3
+We form a dataset of the library of
+4
+'''
+
+
+
+Out[1]:
+'\nSo who writes the Wall Street Journal Editorials?\nWe form a dataset of the library of\n'
+In [2]:
+
+
+1
+import os
+2
+os.getcwd()
+
+
+
+Out[2]:
+'C:\\Users\\jfole\\Downloads'
+In [3]:
+
+
+
+
+1
+# 9min
+2
+import re
+3
+import urllib
+4
+import sys
+5
+from nltk import tokenize
+6
+import numpy as np
+7
+#from bs4 import BeautifulSoup 
+
+
+
+In [ ]:
+
+
+1
+​
+
+
+
+In [4]:
+
+
+1
+​
+2
+#C:\Users\jfole\OneDrive\Desktop\WSJ_articles_All_authors.txt
+3
+#with open("C:\Users\jfole\OneDrive\Desktop\wsj-text-note.txt") as fin:
+4
+with open("C:\Users\jfole\OneDrive\Desktop\WSJ_articles_All_authors.txt") as fin:
+5
+    text = fin.read()
+6
+raw_wsj = text 
+7
+​
+
+
+
+In [5]:
+
+
+1
+raw_wsj[:500]
+
+
+
+Out[5]:
+'\xef\xbb\xbfEditorial  \nboard\nThe ObamaCare Saviors\nSenate Republicans on Tuesday abandoned their latest effort to replace ObamaCare, or, more precisely, a handful of Senators defeated the Graham-Cassidy proposal despite their campaign rhetoric. Mark them down as ObamaCare\xe2\x80\x99s saviors.\nTop billing goes to Kentucky\xe2\x80\x99s Rand Paul, who rode into Congress in 2010 on repealing the Affordable Care Act but in office has become the definition of a feckless libertarian. He helped to kill the Senate\xe2\x80\x99s first repl'
+In [6]:
+
+
+1
+%store raw_wsj
+
+
+
+
+Stored 'raw_wsj' (str)
+In [7]:
+
+
+1
+# 10:15
+2
+raw_wsj[:500]
+
+
+
+Out[7]:
+'\xef\xbb\xbfEditorial  \nboard\nThe ObamaCare Saviors\nSenate Republicans on Tuesday abandoned their latest effort to replace ObamaCare, or, more precisely, a handful of Senators defeated the Graham-Cassidy proposal despite their campaign rhetoric. Mark them down as ObamaCare\xe2\x80\x99s saviors.\nTop billing goes to Kentucky\xe2\x80\x99s Rand Paul, who rode into Congress in 2010 on repealing the Affordable Care Act but in office has become the definition of a feckless libertarian. He helped to kill the Senate\xe2\x80\x99s first repl'
+In [8]:
+
+
+1
+regex_string = "[Ee]ditorial[\n\r\s]" 
+2
+​
+3
+pattern = re.compile(regex_string)
+4
+​
+
+
+
+In [9]:
+
+
+1
+items = pattern.split(text) # divides text .Since no seperator is specified it uses white space 
+2
+​
+
+
+
+In [10]:
+
+
+1
+print(len(items))  
+2
+print(text[:500])
+3
+print(type(text))
+4
+​
+5
+​
+
+
+
+
+68
+﻿Editorial  
+board
+The ObamaCare Saviors
+Senate Republicans on Tuesday abandoned their latest effort to replace ObamaCare, or, more precisely, a handful of Senators defeated the Graham-Cassidy proposal despite their campaign rhetoric. Mark them down as ObamaCare’s saviors.
+Top billing goes to Kentucky’s Rand Paul, who rode into Congress in 2010 on repealing the Affordable Care Act but in office has become the definition of a feckless libertarian. He helped to kill the Senate’s first repl
+<type 'str'>
+In [11]:
+
+
+1
+# 11:40
+2
+from nltk import tokenize
+3
+list_o_edits = tokenize.regexp_tokenize(raw_wsj, pattern)   
+
+
+
+In [12]:
+
+
+1
+'''
+2
+we have raw_wsj
+3
+we have items
+4
+we have pattern
+5
+we have text
+6
+we have list_o_edits
+7
+'''
+
+
+
+Out[12]:
+'\nwe have raw_wsj\nwe have items\nwe have pattern\nwe have text\nwe have list_o_edits\n'
+In [13]:
+
+
+1
+# 11:50
+2
+len(list_o_edits)  
+
+
+
+Out[13]:
+67
+In [14]:
+
+
+
+1
+items = pattern.split(text)
+2
+​
+3
+author_title_search = re.compile("(board|mcgurn|grady|kessler|freeman|galston|henninger|jenkins|noonan|riley|strassel)\n(.*)\n", re.I+re.MULTILINE)
+4
+​
+5
+author_title_list = [author_title_search.search(item) for item in items]
+6
+​
+7
+author_title_list = [(m.group(1).lower(), m.group(2)) if m else ("???","???") for m in author_title_list]
+8
+​
+9
+print("\n".join('"%s" - %s'%(i[:120].strip('\n'), str(name_title)) 
+10
+                for i, name_title in zip(items, author_title_list)))
+11
+​
+
+
+
+
+"﻿" - ('???', '???')
+" 
+board
+The ObamaCare Saviors
+Senate Republicans on Tuesday abandoned their latest effort to replace ObamaCare, or, more" - ('board', 'The ObamaCare Saviors')
+" 
+board
+The FBI’s Missing Texts
+The Justice Department has dropped a second tranche of text exchanges between FBI agen" - ('board', 'The FBI\xe2\x80\x99s Missing Texts')
+" 
+board
+Chuck Schumer, Shut Down
+Over in the department of futile and stupid gestures, the Senate on Monday voted 81-18 " - ('board', 'Chuck Schumer, Shut Down')
+" 
+board
+A Corporate Fighter Rewarded
+One of the rarest birds in American public life is a CEO willing to challenge lawle" - ('board', 'A Corporate Fighter Rewarded')
+" 
+board
+James Comey’s Ethics Class
+The College of William & Mary in Virginia announced last week that James Comey will" - ('board', 'James Comey\xe2\x80\x99s Ethics Class')
+" 
+board
+A Dose of Accountability for the FDA
+One welcome development last year was a productive Food and Drug Administra" - ('board', 'A Dose of Accountability for the FDA')
+" 
+board
+Protecting Legal Fraud in Florida
+Florida’s Legislature is in session, and for the sixth straight year reform-" - ('board', 'Protecting Legal Fraud in Florida')
+" 
+board
+Charles Is in Charge
+Donald Trump spent 90 minutes talking to Senate Minority Leader Chuck Schumer at the White " - ('board', 'Charles Is in Charge')
+" 
+board
+The MetLife Saga’s Mostly Happy Ending
+The federal Financial Stability Oversight Council on Thursday at long l" - ('board', 'The MetLife Saga\xe2\x80\x99s Mostly Happy Ending')
+"board
+Judging the Travel Ban—and Judges
+The Supreme Court agreed Friday to hear a legal challenge to President Trump�" - ('board', 'Judging the Travel Ban\xe2\x80\x94and Judges')
+" 
+McGurn
+Has there ever been a more incurious congressman than Adam Schiff ?
+The California Democrat serves as ranking m" - ('mcgurn', 'Has there ever been a more incurious congressman than Adam Schiff ?')
+" 
+McGurn
+Andrew Cuomo Goes to War
+In the iconography of the American Civil War, the two sides are defined by their color" - ('mcgurn', 'Andrew Cuomo Goes to War')
+" 
+McGurn
+Robert Bork’s lessons from the Saturday Night Massacre take on new relevance.
+Robert Bork has been dead five " - ('mcgurn', 'Robert Bork\xe2\x80\x99s lessons from the Saturday Night Massacre take on new relevance.')
+" 
+McGurn
+The ‘Stupidity’ of Donald Trump
+
+
+This time one year ago, the assumption dominating political coverage was " - ('mcgurn', 'The \xe2\x80\x98Stupidity\xe2\x80\x99 of Donald Trump')
+" 
+McGurn
+Merry Christmas, Iraq
+
+
+A few nights from now the Chaldean archbishop of Erbil, Bashar Matti Warda, will celebr" - ('mcgurn', 'Merry Christmas, Iraq')
+" 
+McGurn
+Let Mueller Keep Digging
+
+
+At a moment when the special counsel’s team is busy calling its own fairness and i" - ('mcgurn', 'Let Mueller Keep Digging')
+" 
+McGurn
+Roy Moore’s Liberal Enablers
+
+
+When Alabamans go to the polls a week from now in a special election to choose" - ('mcgurn', 'Roy Moore\xe2\x80\x99s Liberal Enablers')
+" 
+McGurn
+Mick Mulvaney Is the True Pope
+
+
+Once upon a time, the world had two popes. Today we have two acting directors " - ('mcgurn', 'Mick Mulvaney Is the True Pope')
+" 
+Grady
+Why Venezuela Suffers
+
+
+It’s instructive that Venezuela’s dictatorship chose to kill former police pilot Osc" - ('grady', 'Why Venezuela Suffers')
+" 
+Grady
+The Reinvention of Mexico’s López Obrador
+
+
+This will be a big year for Mexico, with a presidential election " - ('grady', 'The Reinvention of Mexico\xe2\x80\x99s L\xc3\xb3pez Obrador')
+" 
+Grady
+An Election Watershed in Chile
+
+
+Chileans voted on Sunday in a runoff presidential election that was arguably th" - ('grady', 'An Election Watershed in Chile')
+" 
+Grady
+The Left Sets Honduras on Fire
+
+
+Hillary Clinton’s favorite Central American was back in the news this week, a" - ('grady', 'The Left Sets Honduras on Fire')
+" 
+Grady
+Puerto Rico Doesn’t Want Reform
+
+
+It has been 10 weeks since Hurricane Maria slammed into Puerto Rico. The dev" - ('grady', 'Puerto Rico Doesn\xe2\x80\x99t Want Reform')
+" 
+Kessler
+The Future Is Dodgeball
+
+
+The past may be a Shakespearean prologue, but the future is dodgeball.
+Ben Rosen, ch" - ('kessler', 'The Future Is Dodgeball')
+" 
+Kessler
+Unicorns Need IPOs
+
+
+Get ready for the Unicorn Jailbreak. Tech stocks have taken off this year like a bat out " - ('kessler', 'Unicorns Need IPOs')
+" 
+Kessler
+You Read It Here First
+
+
+It’s that time again: Get ready for lists of year-end predictions. My prediction? Y" - ('kessler', 'You Read It Here First')
+" 
+Kessler
+The Expense-Account Racket
+
+
+It was almost a rite of passage. Soon after I started on Wall Street in the 1980s" - ('kessler', 'The Expense-Account Racket')
+" 
+Kessler
+Quit Modifying Capitalism
+
+
+After the calamitous century between Russia’s October Revolution and Venezuela�" - ('kessler', 'Quit Modifying Capitalism')
+" 25
+Kessler
+The past may be a Shakespearean prologue, but the future is dodgeball.
+Ben Rosen, chairman of Compaq Compute" - ('kessler', 'The past may be a Shakespearean prologue, but the future is dodgeball.')
+"Freeman
+Saying No to Skynet?
+
+
+The anti-authoritarians appointed by Donald Trump have lately been doing such an outstand" - ('freeman', 'Saying No to Skynet?')
+"freeman
+Not Reagan Yet
+If it were easy to create the conditions for America’s 1980s resurgence, then all Presidents wo" - ('freeman', 'Not Reagan Yet')
+"Freeman
+Mr. 5%?
+The White House press pool offers an interesting and perhaps even poetic report today on President Trump" - ('freeman', 'Mr. 5%?')
+"Freeman
+Trump Country?
+First Apple and now Starbucks . Reliably Democratic precincts in corporate America keep reporting" - ('freeman', 'Trump Country?')
+"Freeman
+Feigned Migration
+Watching the immigration debate it’s easy to believe that the U.S. is accepting not just a f" - ('freeman', 'Feigned Migration')
+"galston
+The Art of the Immigration Deal
+With the brief government shutdown behind us, we can return to the substance of " - ('galston', 'The Art of the Immigration Deal')
+"galston
+Trump and the Decline of Democracy
+Many Americans worry about our democracy, and some fear for its survival. I b" - ('galston', 'Trump and the Decline of Democracy')
+"Galston
+A Fresh Approach to North Korea
+When it comes to the North Korean nuclear threat, the diplomatic efforts of the " - ('galston', 'A Fresh Approach to North Korea')
+"Galston
+Here’s the Cure for Hyperpartisanship
+Twenty seventeen was a difficult year for the U.S., and 2018 may well b" - ('galston', 'Here\xe2\x80\x99s the Cure for Hyperpartisanship')
+"Galston
+Here’s the Cure for Hyperpartisanship
+Twenty seventeen was a difficult year for the U.S., and 2018 may well be" - ('galston', 'Here\xe2\x80\x99s the Cure for Hyperpartisanship')
+"Galston
+In the 1936 presidential election, Franklin D. Roosevelt won nearly 61% of the popular vote and 523 electoral vo" - ('galston', 'In the 1936 presidential election, Franklin D. Roosevelt won nearly 61% of the popular vote and 523 electoral votes, one of the biggest landslides in U.S. history. And as Robert Dallek reminds us in his new biography, this wasn\xe2\x80\x99t only a personal victory for the incumbent president. Democrats ended up with 75 out of 96 Senate seats and a 331-89 advantage in the House.')
+"Galston
+FDR’s Overreach and Moore
+In the 1936 presidential election, Franklin D. Roosevelt won nearly 61% of the popul" - ('galston', 'FDR\xe2\x80\x99s Overreach and Moore')
+"Henninger
+Republicans and Dreamers
+
+
+The White House and Republicans in Congress have been taking a victory lap—albeit" - ('henninger', 'Republicans and Dreamers')
+"Henninger
+The Trump Paradox
+What’s the difference between Mark Zuckerberg and Donald Trump ?
+Mr. Zuckerberg saw that t" - ('henninger', 'The Trump Paradox')
+"Henninger
+By putting it out there that the U.S. president is an “idiot,” a “dope,” “dumb as sh—” and basic" - ('henninger', 'By putting it out there that the U.S. president is an \xe2\x80\x9cidiot,\xe2\x80\x9d a \xe2\x80\x9cdope,\xe2\x80\x9d \xe2\x80\x9cdumb as sh\xe2\x80\x94\xe2\x80\x9d and basically insane, Michael Wolff may have ensured the success and continuation of Donald J. Trump\xe2\x80\x99s improbable presidency. That\xe2\x80\x99s right, Michael Wolff, who admitted on \xe2\x80\x9cMeet the Press\xe2\x80\x9d that \xe2\x80\x9cthis is 25th Amendment kind of stuff,\xe2\x80\x9d did President Trump a favor.')
+"Henninger
+Make Iran Great Again
+Iran erupted last Thursday. By Friday, the protests against the government, which began " - ('henninger', 'Make Iran Great Again')
+"Henninger
+Two Presidencies in One Year
+There is really only one question anyone asks today: What do you think of it? “" - ('henninger', 'Two Presidencies in One Year')
+"Jenkins
+What the FBI Fight Is About
+To journalists, the Chinese curse “may you live in interesting times” is anythin" - ('jenkins', 'What the FBI Fight Is About')
+"Jenkins
+Why It’s Hillary’s Emails Again
+The new year brings many a revisiting of the Hillary Clinton email server ca" - ('jenkins', 'Why It\xe2\x80\x99s Hillary\xe2\x80\x99s Emails Again')
+"Jenkins
+Trump’s Russian Money
+Before we come to the insinuations of money laundering, which Steve Bannon believes to b" - ('jenkins', 'Trump\xe2\x80\x99s Russian Money')
+"Jenkins
+Climate Change Is the Liberal Non-Agenda
+Fulfilling every stereotype of the phoney-baloney politician, New York " - ('jenkins', 'Climate Change Is the Liberal Non-Agenda')
+"Jenkins
+Of Furries and Fascism at Google
+Do read James Damore’s lawsuit. Get past the absurdity of his framing his gri" - ('jenkins', 'Of Furries and Fascism at Google')
+"Noonan
+Who’s Afraid of Jordan Peterson?
+When I speak with young people beginning their careers I often tell them that " - ('noonan', 'Who\xe2\x80\x99s Afraid of Jordan Peterson?')
+"Noonan
+America Needs More Gentlemen
+
+
+I used to think America needed a parent to help it behave. Now I think it needs a " - ('noonan', 'America Needs More Gentlemen')
+"Noonan
+Trump, Oprah and the Art of Deflection
+Deflection as a media strategy has become an art form. Its purpose is to a" - ('noonan', 'Trump, Oprah and the Art of Deflection')
+"Noonan
+Button’ It, Mr. President
+From the Oval Office address by President John F. Kennedy informing Americans of the " - ('noonan', 'Button\xe2\x80\x99 It, Mr. President')
+"Noonan
+The Lies of ‘The Crown’ and ‘The Post’
+We often write of the urgent need for more truth in politics. A ho" - ('noonan', 'The Lies of \xe2\x80\x98The Crown\xe2\x80\x99 and \xe2\x80\x98The Post\xe2\x80\x99')
+"Riley
+Do Democrats Even Want a Compromise on Immigration?
+Officially, Republicans and Democrats in Congress are working " - ('riley', 'Do Democrats Even Want a Compromise on Immigration?')
+"Riley
+The President and the Porn Star
+The government shut down, and most Americans yawned. Reports that Donald Trump has" - ('riley', 'The President and the Porn Star')
+"Riley
+The Case for Medicaid Work Requirements
+Saturation coverage of what the president did or did not say about immigra" - ('riley', 'The Case for Medicaid Work Requirements')
+"Riley
+California’s Affirmative Action for ‘Marijuana Entrepreneurs
+In California, a criminal record can prevent you " - ('riley', 'California\xe2\x80\x99s Affirmative Action for \xe2\x80\x98Marijuana Entrepreneurs')
+"Riley
+Ta-Nehisi Coates vs. Cornel West Hardly Qualifies as Debate
+Remember that scene in “The Blues Brothers” when t" - ('riley', 'Ta-Nehisi Coates vs. Cornel West Hardly Qualifies as Debate')
+"Riley
+Alabama Disproves the Case Against Voter ID
+If Democrat Doug Jones had lost the Senate contest in Alabama last wee" - ('riley', 'Alabama Disproves the Case Against Voter ID')
+"Strassel
+Operation Sabotage the Memo
+Rep. Adam Schiff has many talents, though few compare to his ability to function as" - ('strassel', 'Operation Sabotage the Memo')
+"Strassel
+Mick Mulvaney’s Makeover
+A year into the Trump presidency, one thing is predictable. The nation will daily be" - ('strassel', 'Mick Mulvaney\xe2\x80\x99s Makeover')
+"Strassel
+The Dossier Rehab Campaign
+There’s no such thing as a coincidence in Washington, so why the sudden, furious e" - ('strassel', 'The Dossier Rehab Campaign')
+"Strassel
+The Democrats’ ‘Russian Descent
+Democrats have spent weeks making the case that the Russia-Trump probes nee" - ('strassel', 'The Democrats\xe2\x80\x99 \xe2\x80\x98Russian Descent')
+"Strassel
+A Big, Beautiful Trump 2018 Issue
+President Trump is on the hunt for a 2018 issue—a strong follow-up to his t" - ('strassel', 'A Big, Beautiful Trump 2018 Issue')
+In [15]:
+
+
+1
+# 12:00
+2
+'''
+3
+list_o_papers[4][:500]
+4
+'''
+5
+items = pattern.split(text)
+6
+​
+7
+for i, item in enumerate(items):
+8
+   
+9
+    test = re.sub("[.\"[.?!:;,()`'*]|(--)|\[|\]|’s|","", item).lower()
+10
+    test = re.sub('\s+', ' ', test)
+11
+    items[i] = test
+12
+print(items[0][:100])
+13
+​
+
+
+
+
+﻿
+In [16]:
+
+
+
+1
+train_documents = [item for item, author in zip(items, author_title_list) if author[0] in ['mcgurn','grady','kessler','freeman'
+2
+                                                                                        ,'galston','henninger','jenkins',
+3
+                                                                                          'noonan', 'riley','strassel']]
+4
+​
+5
+​
+
+
+
+In [17]:
+
+
+1
+train_labels = [author[0] for author in author_title_list if author[0] in ['mcgurn' ,'grady','kessler','freeman'
+2
+                                                                                          ,'galston','henninger','jenkins',
+3
+                                                                                         'noonan', 'riley','strassel']]
+4
+​
+5
+​
+
+
+
+In [18]:
+
+
+1
+author_list = [ 'mcgurn' ,'grady','kessler','freeman' ,'galston','henninger','jenkins', 'noonan', 'riley','strassel']
+
+
+
+In [19]:
+
+
+1
+train_dict = { author:[] for author in author_list }
+2
+for item, author in zip(items, author_title_list):
+3
+    if author[0] not in author_list:
+4
+        continue
+5
+    train_dict[author[0]].append(item)
+
+
+
+In [20]:
+
+
+1
+for k, v in train_dict.items():
+2
+    print(k, ":", [stuff[:20] for stuff in v])
+3
+​
+
+
+
+
+('freeman', ':', ['freeman saying no to', 'freeman not reagan y', 'freeman mr 5% the wh', 'freeman trump countr', 'freeman feigned migr'])
+('mcgurn', ':', [' mcgurn has there ev', ' mcgurn andrew cuomo', ' mcgurn robert bork ', ' mcgurn the \xe2\x80\x98stupi', ' mcgurn merry christ', ' mcgurn let mueller ', ' mcgurn roy moore li', ' mcgurn mick mulvane'])
+('galston', ':', ['galston the art of t', 'galston trump and th', 'galston a fresh appr', ' galston here the cu', 'galston here the cur', 'galston in the 1936 ', 'galston fdr overreac'])
+('noonan', ':', ['noonan who afraid of', 'noonan america needs', 'noonan trump oprah a', 'noonan button\xe2\x80\x99 it ', 'noonan the lies of \xe2'])
+('henninger', ':', ['henninger republican', 'henninger the trump ', 'henninger by putting', 'henninger make iran ', 'henninger two presid'])
+('kessler', ':', [' kessler the future ', ' kessler unicorns ne', ' kessler you read it', ' kessler the expense', ' kessler quit modify', ' 25 kessler the past'])
+('strassel', ':', ['strassel operation s', 'strassel mick mulvan', 'strassel the dossier', 'strassel the democra', 'strassel a big beaut'])
+('grady', ':', [' grady why venezuela', ' grady the reinventi', ' grady an election w', ' grady the left sets', ' grady puerto rico d'])
+('jenkins', ':', ['jenkins what the fbi', 'jenkins why it hilla', 'jenkins trump russia', 'jenkins climate chan', 'jenkins of furries a'])
+('riley', ':', ['riley do democrats e', 'riley the president ', 'riley the case for m', 'riley california aff', 'riley ta-nehisi coat', 'riley alabama dispro'])
+In [21]:
+
+
+1
+# To get the training docs by freeman eg:
+2
+train_dict["freeman"]
+3
+​
+4
+len([a for a in train_dict["freeman"] if "skynet" in a])
+
+
+
+Out[21]:
+1
+In [22]:
+
+
+1
+test_documents = [item for item, author in  zip(items, author_title_list) if author[0] == 'board']
+
+
+
+In [23]:
+
+
+1
+test_labels = [author[0] for author in author_title_list if author[0] == 'board']
+2
+test_numbers = [i for i, author in enumerate(author_title_list) if author[0] == 'board']
+
+
+
+In [24]:
+
+
+1
+print("There are %d training and %d test docs"%(len(train_documents), len(test_documents)))
+
+
+
+
+There are 57 training and 10 test docs
+In [25]:
+
+
+1
+import numpy as np
+2
+np.mean([len(doc) for doc in train_documents])
+
+
+
+Out[25]:
+4945.8070175438597
+In [26]:
+
+
+1
+#14:30 min
+2
+from sklearn.pipeline import Pipeline
+3
+from sklearn.feature_extraction.text import  CountVectorizer, TfidfTransformer 
+4
+from sklearn.linear_model import SGDClassifier               
+5
+                                                           
+6
+text_clf = Pipeline([('vect' , CountVectorizer()),  
+7
+                    ('tfidf',TfidfTransformer()),   
+8
+                    
+9
+                     ('clf',SGDClassifier(loss='log', penalty ='l2', 
+10
+                                        alpha=1e-3, n_iter=5, 
+11
+random_state=42)),
+12
+])
+13
+​
+
+
+
+In [27]:
+
+
+1
+# 18:11
+2
+text_clf.fit(train_documents, train_labels)
+3
+​
+
+
+
+
+C:\Users\jfole\Anaconda2\lib\site-packages\sklearn\linear_model\stochastic_gradient.py:117: DeprecationWarning: n_iter parameter is deprecated in 0.19 and will be removed in 0.21. Use max_iter and tol instead.
+  DeprecationWarning)
+Out[27]:
+Pipeline(memory=None,
+     steps=[('vect', CountVectorizer(analyzer=u'word', binary=False, decode_error=u'strict',
+        dtype=<type 'numpy.int64'>, encoding=u'utf-8', input=u'content',
+        lowercase=True, max_df=1.0, max_features=None, min_df=1,
+        ngram_range=(1, 1), preprocessor=None, stop_words=None,
+        st...ty='l2', power_t=0.5, random_state=42, shuffle=True,
+       tol=None, verbose=0, warm_start=False))])
+In [28]:
+
+
+1
+predicted = text_clf.predict(train_documents)  #NOTE HE IS TESTING ON TRIANING DATA.CHEATING.OVERFIT
+
+
+
+In [29]:
+
+
+1
+#18:50
+2
+import numpy
+3
+numpy.mean(predicted == train_labels)
+
+
+
+Out[29]:
+1.0
+In [30]:
+
+
+1
+'''
+2
+http://scikit-learn.org/stable/modules/grid_search.html
+3
+The scikit documentation describes GridsearchCS as exhaustive
+4
+so we will settle for exhaustion.
+5
+​
+6
+'''
+
+
+
+Out[30]:
+'\nhttp://scikit-learn.org/stable/modules/grid_search.html\nThe scikit documentation describes GridsearchCS as exhaustive\nso we will settle for exhaustion.\n\n'
+In [31]:
+
+
+1
+'''
+2
+When we had the gridsearcCV parameter vect__ngram_range which looks for 
+3
+combinations of words repeatedly used to only consider piaris words McGurn
+4
+Was credited with writing
+5
+#
+6
+If we increase the vect__ngram from (1,2) to (1,5) the accreditations do not change.
+7
+'''
+8
+​
+
+
+
+Out[31]:
+'\nWhen we had the gridsearcCV parameter vect__ngram_range which looks for \ncombinations of words repeatedly used to only consider piaris words McGurn\nWas credited with writing\n#\nIf we increase the vect__ngram from (1,2) to (1,5) the accreditations do not change.\n'
+In [32]:
+
+
+1
+# 19:10
+2
+from sklearn.model_selection import GridSearchCV
+3
+parameters = { 'vect__ngram_range': [(1,1), (1,2),(1,3),(1,4),(1,5)],
+4
+             'tfidf__use_idf': (True,False),
+5
+             'clf__alpha':(1e-2, 1e-3),
+6
+}
+7
+​
+
+
+
+In [33]:
+
+
+1
+#22:42
+2
+gs_clf = GridSearchCV(text_clf , parameters, n_jobs= -1) # njobs= -1 measn use all processors avail on computer.  odd
+
+
+
+In [34]:
+
+
+1
+# 23:00
+2
+gs_clf = gs_clf.fit(train_documents, train_labels)
+3
+predictions = gs_clf.predict(train_documents)
+
+
+
+
+C:\Users\jfole\Anaconda2\lib\site-packages\sklearn\linear_model\stochastic_gradient.py:117: DeprecationWarning: n_iter parameter is deprecated in 0.19 and will be removed in 0.21. Use max_iter and tol instead.
+  DeprecationWarning)
+In [35]:
+
+
+1
+# 23:20
+2
+numpy.mean(predictions == train_labels)
+
+
+
+Out[35]:
+1.0
+In [36]:
+
+
+1
+predictions = gs_clf.predict(test_documents)
+2
+print('\n'.join('"%s" is by %s'%(author_title_list[num][1], name) for num, name in zip(test_numbers, predictions)))
+3
+​
+4
+# how come the sentences below are truncated?
+
+
+
+
+"The ObamaCare Saviors" is by mcgurn
+"The FBI’s Missing Texts" is by jenkins
+"Chuck Schumer, Shut Down" is by riley
+"A Corporate Fighter Rewarded" is by mcgurn
+"James Comey’s Ethics Class" is by mcgurn
+"A Dose of Accountability for the FDA" is by riley
+"Protecting Legal Fraud in Florida" is by mcgurn
+"Charles Is in Charge" is by henninger
+"The MetLife Saga’s Mostly Happy Ending" is by mcgurn
+"Judging the Travel Ban—and Judges" is by mcgurn
+In [37]:
+
+
+1
+# Articles allegedly by mcgurn:
+2
+[doc for doc, name in zip(test_documents, predictions) if name == "mcgurn"]
+3
+# test docs = "board", predictions are the author names of guessed at articles(not also the article)
+
+
+
+Out[37]:
+[' board the obamacare saviors senate republicans on tuesday abandoned their latest effort to replace obamacare or more precisely a handful of senators defeated the graham-cassidy proposal despite their campaign rhetoric mark them down as obamacare saviors top billing goes to kentucky rand paul who rode into congress in 2010 on repealing the affordable care act but in office has become the definition of a feckless libertarian he helped to kill the senate first replacement bill over the summer because it did not repeal every last footnote in the law then he supported \xe2\x80\x9cskinny repeal\xe2\x80\x9d that merely repealed the individual and employer mandates and medical-device tax justifying that vote as realistic graham-cassidy would have done the same as the skinny bill plus devolve medicaid control to the states\xe2\x80\x94the most significant entitlement reform in decades\xe2\x80\x94and the same rand paul who scolds everyone about runaway federal spending said no perhaps he thinks his vote for the skinny bill will protect him politically but no one should be fooled mr paul did more than chuck schumer to save obamacare john mccain is another member of this dishonor roll and he been reminding everyone that he kept his word that the process must be bipartisan his commitment to senate procedure is apparently more ironclad than his word to arizona voters who re-elected him against tea party challengers in part on his promise to repeal the law lisa murkowski of alaska supported obamacare repeal until the moment a republican president would sign it she had not by tuesday publicly announced whether she\xe2\x80\x99d vote for graham-cassidy though her alaska first demands in private all but included an unmarked cargo plane dropping off pallets of euros in juneau and don\xe2\x80\x99t forget maine susan collins who opposed both bills after more or less token consideration that she thought her state couldn\xe2\x80\x99t manage medicaid better than the federal government is something to remember if she runs for governor next year mr schumer is now vowing bipartisan cooperation\xe2\x80\x94though only on his terms which means bailing out the obamacare exchanges and insurers republicans would be wiser to turn to tax reform and see if they can avoid blowing that one too maybe anger from gop voters will force them to revisit health care next year ',
+ ' board a corporate fighter rewarded one of the rarest birds in american public life is a ceo willing to challenge lawless government regulators the political risks of resistance can outweigh the potential rewards so we don\xe2\x80\x99t want to let the story of metlife victory over the financial stability oversight council fsoc pass without a salute\xe2\x80\x94and a contrast with a competitor that played it safe metlife was vindicated last week after fsoc dropped its appeal of federal judge rosemary collyer order rescinding its \xe2\x80\x9csystemically important\xe2\x80\x9d sifi designation the decision by ceo steven kandarian to challenge the government in 2015 was especially risky since financial regulators enjoy broad discretion and enforcement powers under the dodd-frank act the lawsuit exposed how the council flagrantly violated its own guidance and administrative law by neglecting to perform cost-benefit analysis judge collyer decision rebuking the government infuriated former treasury secretary jack lew a vindictive sort who immediately appealed to the dc circuit court of appeals the case landed before a liberal panel when hillary clinton was presumed to be the next president other nonbanks that had been designated sifis rolled over ge capital shed its too-big-to-fail label in june 2016 after selling off significant assets aig sought to do the same and fsoc freed it from sifi bondage last september both companies received public help during the financial panic and deserved their original sifi status the real contrast with metlife fortitude is prudential the giant insurer that received a sifi label shortly before metlife prudential hadn\xe2\x80\x99t needed a bailout in 2008 and also poses little risk to the banking system yet the executives and board at prudential chose not to fight the feds that means prudential remains in sifi bondage even as metlife is freed once the dc circuit accepts the fsoc motion to drop the case under a strict reading of dodd-frank a designated firm is supposed to make substantial changes in structure or size to warrant removal\xe2\x80\x94and then only with a two-thirds vote of the 10-person fsoc the trump treasury has laid out an \xe2\x80\x9coff-ramp\xe2\x80\x9d for designated firms and perhaps prudential will pursue that but if it succeeds prudential will owe a debt to metlife for daring to stand up to regulatory coercion mr kandarian deserves particular praise and would be an excellent candidate for treasury secretary and credit goes as well to the metlife board of directors as for prudential ceo john strangfeld if his company is liberated he should write a check to metlife to defray some of its litigation costs or at least send a note thanking metlife for fighting federal bullies ',
+ ' board james comey ethics class the college of william & mary in virginia announced last week that james comey will teach a course on \xe2\x80\x9cethical leadership\xe2\x80\x9d starting this autumn the former fbi director would not have been our first choice for such an assignment but upon reflection maybe his experience as a federal prosecutor deputy attorney general and fbi director is ideal for the task mr comey said in a statement accompanying the news that \xe2\x80\x9cethical leaders lead by seeing above the short term above the urgent or the partisan and with a higher loyalty to lasting values most importantly the truth\xe2\x80\x9d in that spirit here are some suggestions on how mr comey can structure his course to help students confront these profound questions week one case study the fbi is investigating a presidential candidate for mishandling classified emails as secretary of state the director decides on his own to violate justice department rules and exonerate that candidate in a public statement to the media letting an aide replace the legally potent phrase \xe2\x80\x9cgrossly negligent\xe2\x80\x9d in a draft of his statement with \xe2\x80\x9cextremely careless\xe2\x80\x9d in the final version students will examine when a public official can choose to ignore rules and standards of conduct for what he considers to be higher purposes required reading former deputy attorney general and federal judge laurence silberman february 2017 speech to the columbia law school chapter of the federalist society breakout session topic having exonerated that candidate the fbi director intervenes in the campaign again only days before election day saying new evidence has required him to reopen the email case two days before the polls open he says that the new evidence turned out to be nothing of consequence was the fbi director protecting the rule of law or his own reputation ethical guides huma abedin and anthony weiner will visit each breakout session to steer the discussions thanks to the federal prison system for letting mr weiner appear by video from federal medical center devens week two amid the post-enron political frenzy a prosecutor indicts an investment banker not on bank-related charges but on obstruction of justice based on a snippet of an ambiguous email the first trial ends in a hung jury but the prosecutor wins on the second try only to be overturned by an appellate court students will explore the ethical demands of prosecutorial discretion guest lecturer frank quattrone week three fbi director robert mueller and the us attorney for the southern district of new york are convinced that the man behind the 2001 anthrax mail attacks is a government virologist they spend years pursuing him and destroying his reputation through the media only to concede years later that they had fingered the wrong man students will examine the ethics of trial-by-media and the risks to the fair administration of justice from prosecutors who ignore contrary evidence visiting scholars nicholas kristof and steven jay hatfill week four a deputy attorney general handpicks a personal friend and godfather to one of his children patrick fitzgerald as a special counsel to investigate who leaked the name of cia official valerie plame within days mr fitzgerald learns that the leaker was deputy secretary of state richard armitage a fact he then keeps secret for years instead of closing the case the deputy ag expands mr fitzgerald mandate after a three-year investigation that turns up nothing new mr fitzgerald indicts a white house aide for perjury to salvage something from the effort reporter judith miller whom mr fitzgerald sent to jail for 85 days to force her testimony that was crucial in convicting the white house official later says she testified falsely after mr fitzgerald withheld crucial information from her students will consider the ethics of special counsels without effective supervision and whether mr fitzgerald showed loyalty to lasting values and the truth by keeping the name of the leaker secret from the public and president george w bush special guest invited scooter libby we can think of many other ripe areas for ethical exploration across mr comey long career but this should get him off to a compelling start if mr comey decides to go in a different direction from our advice perhaps an enterprising student can raise the issues here during discussion periods ',
+ ' board protecting legal fraud in florida florida legislature is in session and for the sixth straight year reform-minded republicans are trying to shut down a trial-bar scheme that bleeding property insurers and sending sunshine state premiums skyrocketing this fight will speak volumes about the character of florida gop at issue is assignment of benefit aob abuse whereby an insured person signs away insurance rights to a third party who then sues the insurer more than 28000 aob lawsuits were filed in florida in 2016 up from 405 a decade earlier raising costs for insurers and the insured state regulators estimate miami-dade residents insuring a $150000 home could see premiums rise more than 40% by 2022 thanks to this man-made litigation flood panama city republican jay trumbull a leader in the reform effort filed a bill last year that would change how court damages are calculated and reduce the incentive to file frivolous aob lawsuits florida house of representatives passed the measure this month 82-20 which shows that at least some republicans will fight the jackpot-justice lobby not so in the senate where republican anitere flores chairs the banking and insurance committee in the last legislative session ms flores backed by senate president joe negron let an aob reform bill introduced by port orange republican dorothy hukill languish this year she doing it again the miami republican has however been happy to consider a bill by sarasota greg steube that would forbid insurance companies from including litigation costs in rates and limit their ability to deny claims because of fraud aob fraud would skyrocket ms flores said this month that mr steube measure \xe2\x80\x9cis not a bill the insurance industry loves\xe2\x80\x9d but the issue is whether they can operate profitably in the state florida governor rick scott and insurance commissioner david altmaier have been vocal advocates for aob reform but they can\xe2\x80\x99t act unilaterally to stop the flood of lawsuits florida has benefited from its low-tax regime but it can\xe2\x80\x99t continue to prosper if it becomes a mecca for looting by lawsuit ',
+ ' board the metlife saga mostly happy ending the federal financial stability oversight council on thursday at long last dropped its appeal of a federal judge ruling that rescinded metlife too-big-to-fail designation this is progress but the four-year standoff is a reminder of how regulators can abuse their power in 2014 the council dubbed metlife a \xe2\x80\x9csystemically important financial institution\xe2\x80\x9d which under the dodd-frank act must adhere to bank-style capital and liquidity standards fsoc which includes the heads of nine federal agencies that oversee financial institutions departed from its own regulatory guidance and denied metlife access to its analysis metlife sued and was vindicated in 2016 when federal judge rosemary collyer ruled that fsoc failed to consider how the market would be destabilized or other institutions would be harmed by a metlife collapse fsoc also \xe2\x80\x9cpurposefully\xe2\x80\x9d refused to assess the costs of its designation in violation of well-established administrative law the obama administration appealed to the dc circuit court of appeals which put the case on hold last spring at the request of the council while the trump treasury department completed a review of the systemic-designation process we urged the white house to drop the appeal but were told that a majority vote on the council was necessary if that true fsoc by design undermines the president ability to set executive policy in november treasury recommended the council revise its guidance to require that fsoc conduct a cost-benefit analysis and assess the likelihood of an institution material financial distress but a majority vote is needed to put its recommendations into effect so while most other executive agencies were rolling back obama overreaches this past year fsoc sat tight trump appointees finally comprise a majority on the council since white house budget director mick mulvaney replaced richard cordray as head of the consumer financial protection bureau this appears to have prompted fsoc agreement to settle the case and let judge collyer ruling stand yet it disappointing that the government required that metlife as a condition of the settlement ask the judge to vacate the portion of her opinion concluding that the council failed to undertake the required cost-benefit analysis this part of the ruling is significant because judge collyer held that agencies can\xe2\x80\x99t arbitrarily consider benefits of regulations while ignoring costs she explained that under the supreme court 2015 ruling in michigan v epa agencies may not \xe2\x80\x9c\xe2\x80\x98entirely fail to consider an important aspect of the problem\xe2\x80\x99 when deciding whether regulation is appropriate\xe2\x80\x9d judge collyer thus extended michigan v epa limits on regulatory discretion and judicial deference to fsoc and other government agencies\xe2\x80\x94an important potential precedent treasury has endorsed a rigorous cost-benefit analysis and metlife made a full-throated argument for it so why is the trump administration trying to change the judicial record and expand administrative power it possible that career officials at justice want to protect regulators\xe2\x80\x99 discretion which would make it easier to defend the government against other lawsuits but this reinforces how regulators will resist relinquishing power and tying their own hands we hope judge collyer sticks with her original ruling ',
+ 'board judging the travel ban\xe2\x80\x94and judges the supreme court agreed friday to hear a legal challenge to president trump travel ban and this is good news for the rule of law and those who believe in the proper separation of powers under the constitution the justices have a chance to rule on the legality of mr trump ban but also whether judges can ignore the law merely because they loathe mr trump and all his works that our read of the supreme court announcement friday granting the administration petition for certiorari in trump v hawaii the justices agreed to hear the case in near-record time which means they can hold oral arguments and issue a ruling this term this may suggest that at least some of the justices want to rebuke the judiciary for stretching the law to join the political resistance to mr trump the administration is fighting a preliminary injunction issued by a lower court in hawaii against the third iteration of its travel ban we disagree with the policy merits of the ban but the clear language of the law and the constitution give presidents enormous latitude on national security and immigration the ninth circuit court of appeals nonetheless upheld the nationwide injunction this isn\xe2\x80\x99t merely about one rogue circuit court in the year since mr trump took office there have been 19 nationwide injunctions against administration initiatives ranging from sanctuary cities to new rules on contraceptive coverage many of these rulings reject longstanding legal understandings or refer to mr trump campaign statements rather than the language of the regulation to put it another way more than a dozen district judges and at least two full appellate courts\xe2\x80\x94the fourth and ninth circuits\xe2\x80\x94appear to be operating as a political resistance attorney general jeff sessions may have been looking at this judicial landscape this week when he asked the high court to bypass the ninth circuit and overturn a lower-court ruling blocking the administration decision to end the deferred action for childhood arrivals program federal judge william alsup ruled that it is illegitimate for president trump to use an executive directive to counter president obamas previous directive we hope the justices choose to hear that case as well the courts need to oppose genuine acts of executive excess but judicial rulings have to be rooted in law not political animus otherwise the judiciary will be guilty of the same lawless impulses that liberals claim to fear in mr trump ']
+In [38]:
+
+
+1
+predicted_articles = {n:[] for n in author_list}
+2
+for doc, name in zip(test_documents, predictions):
+3
+    predicted_articles[name].append(doc)
+4
+​
+
+
+
+In [39]:
+
+
+1
+for k, v in predicted_articles.items():
+2
+    print(k, "has %d entries"%len(v))
+
+
+
+
+('freeman', 'has 0 entries')
+('mcgurn', 'has 6 entries')
+('galston', 'has 0 entries')
+('noonan', 'has 0 entries')
+('henninger', 'has 1 entries')
+('kessler', 'has 0 entries')
+('strassel', 'has 0 entries')
+('grady', 'has 0 entries')
+('jenkins', 'has 1 entries')
+('riley', 'has 2 entries')
+In [40]:
+
+
+1
+for k, v in train_dict.items():
+2
+    print(k, "has %d entries"%len(v))
+
+
+
+
+('freeman', 'has 5 entries')
+('mcgurn', 'has 8 entries')
+('galston', 'has 7 entries')
+('noonan', 'has 5 entries')
+('henninger', 'has 5 entries')
+('kessler', 'has 6 entries')
+('strassel', 'has 5 entries')
+('grady', 'has 5 entries')
+('jenkins', 'has 5 entries')
+('riley', 'has 6 entries')
+In [41]:
+
+
+1
+probs = gs_clf.predict_proba(test_documents)
+
+
+
+In [42]:
+
+
+1
+for i, (doc, name, prob, num) in enumerate(zip(test_documents, predictions, probs, test_numbers)):
+2
+    print("Test article '%s' is by %s with %f %% accuracy"%(author_title_list[num][1],  name, prob.max()))
+
+
+
+
+Test article 'The ObamaCare Saviors' is by mcgurn with 0.149438 % accuracy
+Test article 'The FBI’s Missing Texts' is by jenkins with 0.235299 % accuracy
+Test article 'Chuck Schumer, Shut Down' is by riley with 0.175042 % accuracy
+Test article 'A Corporate Fighter Rewarded' is by mcgurn with 0.140017 % accuracy
+Test article 'James Comey’s Ethics Class' is by mcgurn with 0.259232 % accuracy
+Test article 'A Dose of Accountability for the FDA' is by riley with 0.156921 % accuracy
+Test article 'Protecting Legal Fraud in Florida' is by mcgurn with 0.134333 % accuracy
+Test article 'Charles Is in Charge' is by henninger with 0.181322 % accuracy
+Test article 'The MetLife Saga’s Mostly Happy Ending' is by mcgurn with 0.146382 % accuracy
+Test article 'Judging the Travel Ban—and Judges' is by mcgurn with 0.200635 % accuracy
+In [43]:
+
+
+1
+'''
+2
+Test article 'The ObamaCare Saviors' is by mcgurn with 0.149438 % accuracy
+3
+Test article 'The FBI’s Missing Texts' is by jenkins with 0.235299 % accuracy
+4
+Test article 'Chuck Schumer, Shut Down' is by riley with 0.175042 % accuracy
+5
+Test article 'A Corporate Fighter Rewarded' is by mcgurn with 0.140017 % accuracy
+6
+Test article 'James Comey’s Ethics Class' is by mcgurn with 0.259232 % accuracy
+7
+Test article 'A Dose of Accountability for the FDA' is by riley with 0.156921 % accuracy
+8
+Test article 'Protecting Legal Fraud in Florida' is by mcgurn with 0.134333 % accuracy
+9
+Test article 'Charles Is in Charge' is by henninger with 0.181322 % accuracy
+10
+Test article 'The MetLife Saga’s Mostly Happy Ending' is by mcgurn with 0.146382 % accuracy
+11
+Test article 'Judging the Travel Ban—and Judges' is by mcgurn with 0.200635 % accuracy
+12
+'''
+
+
+
+Out[43]:
+"\nTest article 'The ObamaCare Saviors' is by mcgurn with 0.149438 % accuracy\nTest article 'The FBI\xe2\x80\x99s Missing Texts' is by jenkins with 0.235299 % accuracy\nTest article 'Chuck Schumer, Shut Down' is by riley with 0.175042 % accuracy\nTest article 'A Corporate Fighter Rewarded' is by mcgurn with 0.140017 % accuracy\nTest article 'James Comey\xe2\x80\x99s Ethics Class' is by mcgurn with 0.259232 % accuracy\nTest article 'A Dose of Accountability for the FDA' is by riley with 0.156921 % accuracy\nTest article 'Protecting Legal Fraud in Florida' is by mcgurn with 0.134333 % accuracy\nTest article 'Charles Is in Charge' is by henninger with 0.181322 % accuracy\nTest article 'The MetLife Saga\xe2\x80\x99s Mostly Happy Ending' is by mcgurn with 0.146382 % accuracy\nTest article 'Judging the Travel Ban\xe2\x80\x94and Judges' is by mcgurn with 0.200635 % accuracy\n"
